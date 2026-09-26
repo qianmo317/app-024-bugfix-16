@@ -18,8 +18,9 @@ function homoIdx(ctx: DataCtx): Map<string, string[]> {
 }
 
 function categoryLengthNote(cat: RiddleCategory): string {
-  if (cat === 'char') return '（成语应 4 字）';
-  return '（猜一字应 1 字）';
+  if (cat === 'char') return '（猜一字应 1 字）';
+  if (cat === 'idiom') return '（成语应 4 字）';
+  return '';
 }
 
 export function validateRiddle(
@@ -186,24 +187,24 @@ export function validateRiddle(
 
 export const FORMAT_RULE_BRIEF: Record<RiddleFormat, string> = {
   none: '不作谜格变化，谜底直扣谜面',
-  qiqian: '谜底两字，整条谐音读',
-  juanlian: '谜底两字，倒读扣合谜面',
-  xufei: '谜底各字均读谐音，不取本义',
-  lihua: '谜底各字去相同偏旁后读',
-  baitou: '谜底末字读谐音',
-  fendi: '谜底首字读谐音',
-  shanglou: '谜底首字移至末尾连读',
-  xialou: '谜底末字移至最前连读',
+  qiqian: '谜底两字，倒读扣合谜面',
+  juanlian: '谜底三字及以上，倒序读扣合谜面',
+  xufei: '谜底各字去相同偏旁后读',
+  lihua: '谜底各字均读谐音，不取本义',
+  baitou: '谜底首字读谐音',
+  fendi: '谜底末字读谐音',
+  shanglou: '谜底末字移至最前连读',
+  xialou: '谜底首字移至末尾连读',
 };
 
 export const FORMAT_AUTO_CAPABILITY: Record<RiddleFormat, string> = {
-  none: '可自动判定：字数匹配、语义是否扣合',
-  qiqian: '可自动判定：倒读后的语义扣合；字数不限',
-  juanlian: '可自动判定：倒序读法与语义扣合；字数不限',
-  xufei: '可自动判定：去旁读法、去旁后与谜面的语义扣合',
-  lihua: '可自动判定：整条谐音后的语义扣合；字数不限',
-  baitou: '可自动判定：首字谐音后的语义扣合；字数不限',
-  fendi: '可自动判定：末字谐音后的语义扣合；字数不限',
-  shanglou: '可自动判定：移字读法与语义扣合；字数不限',
-  xialou: '可自动判定：移字读法与语义扣合；字数不限',
+  none: '可自动判定：谜底字数与谜目匹配、生僻字与多音字提示；语义扣合需人工核对',
+  qiqian: '可自动判定：谜底须两字，并给出倒读结果；倒读后与谜面的语义扣合需人工核对',
+  juanlian: '可自动判定：谜底须三字及以上，并给出倒序读法；与谜面的语义扣合需人工核对',
+  xufei: '可自动判定：谜底各字偏旁是否相同，并给出去旁读法；去旁后与谜面的语义扣合需人工核对',
+  lihua: '可自动判定：谜底字数，并给出谐音候选；谐音后与谜面的语义扣合需人工核对',
+  baitou: '可自动判定：谜底字数，并给出首字谐音候选；首字谐音是否成立需人工核对',
+  fendi: '可自动判定：谜底字数，并给出末字谐音候选；末字谐音是否成立需人工核对',
+  shanglou: '可自动判定：谜底须三字及以上，并给出末字移首读法；与谜面的语义扣合需人工核对',
+  xialou: '可自动判定：谜底须三字及以上，并给出首字移尾读法；与谜面的语义扣合需人工核对',
 };

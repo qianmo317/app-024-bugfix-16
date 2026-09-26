@@ -1,6 +1,6 @@
 // 谜格校验规则引擎单元测试（48+ 用例，PRD §10：40 条用例含正例/误例/无法自动判定）
 import { describe, it, expect } from 'vitest';
-import { validateRiddle } from '../src/lib/validate';
+import { validateRiddle, FORMAT_RULE_BRIEF, FORMAT_AUTO_CAPABILITY } from '../src/lib/validate';
 import type { DataCtx } from '../src/lib/datafiles';
 import type { RiddleCategory, RiddleFormat } from '../src/types';
 
@@ -268,5 +268,78 @@ describe('跨检查组合', () => {
     expect(r.verdict).toBe('pass');
     expect(r.reasons.join()).toContain('多音字');
     expect(r.reasons.join()).toContain('燚');
+  });
+});
+
+describe('无格通过提示的字数说明（挂在正确的谜目上）', () => {
+  const ctx = mkCtx();
+  it('猜一字通过 → 提示「猜一字应 1 字」', () => {
+    const r = check('一口咬掉牛尾巴', '告', 'char', 'none', ctx);
+    expect(r.reasons.join()).toContain('（猜一字应 1 字）');
+    expect(r.reasons.join()).not.toContain('成语应 4 字');
+  });
+  it('猜成语通过 → 提示「成语应 4 字」', () => {
+    const r = check('一块变九块', '四分五裂', 'idiom', 'none', ctx);
+    expect(r.reasons.join()).toContain('（成语应 4 字）');
+    expect(r.reasons.join()).not.toContain('猜一字应 1 字');
+  });
+  it('其他谜目不挂字数说明', () => {
+    const r = check('千条线万条线', '雨', 'object', 'none', ctx);
+    expect(r.reasons.join()).toContain('基础校验通过');
+    expect(r.reasons.join()).not.toContain('应 1 字');
+    expect(r.reasons.join()).not.toContain('应 4 字');
+  });
+});
+
+describe('谜格说明卡片与判定逻辑一致（FORMAT_RULE_BRIEF）', () => {
+  it('秋千格：两字倒读（非谐音）', () => {
+    expect(FORMAT_RULE_BRIEF.qiqian).toContain('两字');
+    expect(FORMAT_RULE_BRIEF.qiqian).toContain('倒读');
+    expect(FORMAT_RULE_BRIEF.qiqian).not.toContain('谐音');
+  });
+  it('卷帘格：三字及以上倒序（非两字）', () => {
+    expect(FORMAT_RULE_BRIEF.juanlian).toContain('三字及以上');
+    expect(FORMAT_RULE_BRIEF.juanlian).toContain('倒序');
+  });
+  it('徐妃格：去相同偏旁（非谐音）', () => {
+    expect(FORMAT_RULE_BRIEF.xufei).toContain('偏旁');
+    expect(FORMAT_RULE_BRIEF.xufei).not.toContain('谐音');
+  });
+  it('梨花格：各字谐音（非去偏旁）', () => {
+    expect(FORMAT_RULE_BRIEF.lihua).toContain('谐音');
+    expect(FORMAT_RULE_BRIEF.lihua).not.toContain('偏旁');
+  });
+  it('白头格首字 / 粉底格末字，不颠倒', () => {
+    expect(FORMAT_RULE_BRIEF.baitou).toContain('首字');
+    expect(FORMAT_RULE_BRIEF.baitou).not.toContain('末字');
+    expect(FORMAT_RULE_BRIEF.fendi).toContain('末字');
+    expect(FORMAT_RULE_BRIEF.fendi).not.toContain('首字');
+  });
+  it('上楼格末字移首 / 下楼格首字移尾，不颠倒', () => {
+    expect(FORMAT_RULE_BRIEF.shanglou).toContain('末字移至最前');
+    expect(FORMAT_RULE_BRIEF.xialou).toContain('首字移至末尾');
+  });
+});
+
+describe('自动判定能力说明诚实（FORMAT_AUTO_CAPABILITY）', () => {
+  const formats: RiddleFormat[] = ['none', 'qiqian', 'juanlian', 'xufei', 'lihua', 'baitou', 'fendi', 'shanglou', 'xialou'];
+  it('九格齐全', () => {
+    for (const f of formats) expect(FORMAT_AUTO_CAPABILITY[f]).toBeTruthy();
+  });
+  it('每格都标明语义扣合需人工（不夸大成可自动判定）', () => {
+    for (const f of formats) expect(FORMAT_AUTO_CAPABILITY[f]).toContain('人工');
+  });
+  it('不把语义扣合列为可自动判定项', () => {
+    for (const f of formats) {
+      const auto = FORMAT_AUTO_CAPABILITY[f].split('；')[0];
+      expect(auto).not.toContain('语义');
+    }
+  });
+  it('有结构判定的格写明字数/偏旁等可判项', () => {
+    expect(FORMAT_AUTO_CAPABILITY.qiqian).toContain('两字');
+    expect(FORMAT_AUTO_CAPABILITY.juanlian).toContain('三字及以上');
+    expect(FORMAT_AUTO_CAPABILITY.xufei).toContain('偏旁');
+    expect(FORMAT_AUTO_CAPABILITY.baitou).toContain('首字');
+    expect(FORMAT_AUTO_CAPABILITY.fendi).toContain('末字');
   });
 });
